@@ -15,8 +15,6 @@ async function main() {
   console.log('database conectted..')
 }
 
-
-
 //bodyParser
 server.use(express.json());
 //server.use(morgan('default'));
