@@ -36,7 +36,7 @@ exports.getAllProducts = async (req, res) => {
     const products = await Product.find(); // Use the `find` function on the model
     res.json(products);
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred while fetching products' });
+    res.status(500).json(error.message);
   }
 };
 //update using put
