@@ -1,45 +1,73 @@
-const express = require("express");
 const fs = require("fs");
 const index = fs.readFileSync("index.html", "utf8");
 const data = JSON.parse(fs.readFileSync("data.json", "utf-8"));
-const products = data.products;
+const model = require('../model/product');
+//const products = data.products;
+const Product = model.Product;
 
 //create
 exports.createProduct = (req, res) => {
-  products.push(req.body);
-  res.json(req.body);
-  res.status(201, "added new phone");
-};
+  const product = new Product(req.body);
+  product.save()
+    .then(() => {
+      console.log('saved : ');
+      res.status(201).send("Added new phone");
+    })
+    .catch((err) => {
+      res.status(500).send(err.message);
+    });
+}
+
 //read
-exports.getProduct = (req, res) => {
-  const id = +req.params.id;
-  const product = products.find((p) => p.id === id);
-  res.json(product);
+exports.getProduct = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const product = await Product.findById(id);
+    res.json(product);
+  } catch (error) {
+    res.status(400).json({ error });
+  }
+  //const product = products.find((p) => p.id === id);
+
 };
 //read All
-
-exports.getAllProducts = (req, res) => {
-  res.json(products);
+exports.getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find(); // Use the `find` function on the model
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'An error occurred while fetching products' });
+  }
 };
 //update using put
-exports.updateProduct = (req, res) => {
-  const id = +req.params.id;
-  const productIndex = products.findIndex((p) => p.id === id);
-  products.splice(productIndex, 1, { ...req.body, id: id });
-  res.status(200).send("Updated");
+exports.replaceProduct = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.findOneAndReplace({ _id: id }, req.body, { new: true });
+    res.json(product);
+  } catch (error) {
+    res.status(400).send(error)
+  }
+
 };
 //update using patch
-exports.editProduct = (req, res) => {
-  const id = +req.params.id;
-  const productIndex = products.findIndex((p) => p.id === id);
-  const product = products[productIndex];
-  products.splice(productIndex, 1, { ...product, ...req.body });
-  res.status(200).send("Updated");
+exports.updateProduct = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.findOneAndUpdate({ _id: id }, req.body, { new: true });
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(400).send(error)
+  }
 };
+
 //delete
-exports.deleteProduct = (req, res) => {
-  const id = +req.params.id;
-  const productIndex = products.findIndex((p) => p.id === id);
-  products.splice(productIndex, 1);
-  res.status(200).send("deleted");
+exports.deleteProduct = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.findOneAndDelete({ _id: id });
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(400).send(error)
+  }
 };

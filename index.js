@@ -1,17 +1,30 @@
+require('dotenv').config()
 const morgan = require("morgan");
 const express = require("express");
+const mongoose = require('mongoose');
 const server = express();
+const productRouter = require('./routes/product');
+const userRouter = require('./routes/user');
+
+
+//db connection
+main().catch(err => console.log('error in db connection : ', err));
+
+async function main() {
+  await mongoose.connect('mongodb://127.0.0.1:27017/ecommerce');
+  console.log('database conectted..')
+}
+
+
+
 //bodyParser
 server.use(express.json());
-const productController = require("./controller/product");
+//server.use(morgan('default'));
+//server.use(express.static('public'));
+server.use('/products', productRouter.routes);
+server.use('/users', userRouter.routes);
 
-server.get("/products", productController.getAllProducts);
-server.get("/products/:id", productController.getProduct);
-server.post("/products", productController.createProduct);
-server.put("/products/:id", productController.updateProduct);
-server.patch("/products/:id", productController.editProduct);
-server.delete("/products/:id", productController.deleteProduct);
 
 server.listen(8080, () => {
   console.log("server started");
-});
+});    
